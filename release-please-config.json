@@ -1,0 +1,14 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "ovos-tts-plugin-kokoro",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "ovos_tts_plugin_kokoro/version.py"
+        }
+      ]
+    }
+  }
+}

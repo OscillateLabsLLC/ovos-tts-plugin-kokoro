@@ -1,2 +1,2 @@
-__version__ = "0.1.0a1"
+__version__ = "0.1.0"  # x-release-please-version
 VERSION = __version__

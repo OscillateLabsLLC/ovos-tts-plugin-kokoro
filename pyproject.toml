@@ -1,0 +1,99 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ovos-tts-plugin-kokoro"
+description = "OVOS TTS plugin for Kokoro — 82M parameter multilingual TTS by hexgrad"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.13"
+authors = [
+    { name = "Mike Gray/Oscillate Labs", email = "mike@oscillatelabs.net" },
+]
+keywords = ["ovos", "neon", "plugin", "tts", "kokoro", "hexgrad"]
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "kokoro>=0.9.4",
+    "soundfile",
+    "scipy",
+    "numpy",
+    "ovos-plugin-manager>=0.0.1",
+    "ovos-utils>=0.0.30",
+]
+
+[project.optional-dependencies]
+server = ["ovos-tts-server>=0.0.4", "setuptools"]
+ja = ["misaki[ja]"]
+zh = ["misaki[zh]"]
+
+[project.urls]
+Homepage = "https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro"
+
+[project.entry-points."mycroft.plugin.tts"]
+ovos-tts-plugin-kokoro = "ovos_tts_plugin_kokoro:KokoroTTSPlugin"
+
+[project.entry-points."mycroft.plugin.tts.config"]
+"ovos-tts-plugin-kokoro.config" = "ovos_tts_plugin_kokoro:KokoroTTSPluginConfig"
+
+[tool.hatch.version]
+path = "ovos_tts_plugin_kokoro/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ovos_tts_plugin_kokoro"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.0",
+    # ovos-plugin-manager imports pkg_resources, which setuptools 81 removed.
+    # Pin to a version that still ships it so tests can run. Drop this once
+    # ovos-plugin-manager stops importing pkg_resources.
+    "setuptools<81",
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=ovos_tts_plugin_kokoro --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 119
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+combine-as-imports = true
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+# Route torch to CPU-only wheels for uv users (saves ~2GB on Linux)
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

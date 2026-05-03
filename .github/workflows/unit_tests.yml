@@ -1,0 +1,32 @@
+# This workflow will run unit tests
+
+name: Run Unit Tests
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    # macos-14 keeps torch on the CPU-only PyPI wheel (~60 MB) instead of
+    # the Linux CUDA wheel (~2.5 GB). Kokoro is CPU-only anyway (and CPU
+    # is actually faster than MPS on Apple Silicon for this model).
+    # Python is pinned <3.13 because misaki + spacy lag behind.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+      - name: Test package
+        run: |
+          uv run pytest

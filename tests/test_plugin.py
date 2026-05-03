@@ -101,3 +101,21 @@ def test_get_tts_voice_overrides_lang(mock_get_pipeline, tmp_path):
 
     args, _ = mock_get_pipeline.call_args
     assert args[0] == "b"
+
+
+@patch("ovos_tts_plugin_kokoro.tts._get_pipeline")
+def test_get_tts_default_voice_sentinel(mock_get_pipeline, tmp_path):
+    """OVOS/Neon pass voice="default" when no voice is picked — must fall
+    back to configured voice rather than asking Kokoro for a voice named
+    "default" (which 404s on HF Hub)."""
+    fake_audio = np.zeros(24000, dtype=np.float32)
+    pipeline = _fake_pipeline([fake_audio])
+    mock_get_pipeline.return_value = pipeline
+
+    from ovos_tts_plugin_kokoro import KokoroTTSPlugin
+
+    plug = KokoroTTSPlugin(config={"lang": "en-US", "voice": "af_bella", "sample_rate": 24000})
+    plug.get_tts("Hi", str(tmp_path / "default.wav"), voice="default")
+
+    _args, kwargs = pipeline.call_args
+    assert kwargs.get("voice") == "af_bella"

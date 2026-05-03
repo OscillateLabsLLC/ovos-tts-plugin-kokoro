@@ -245,7 +245,11 @@ class KokoroTTSPlugin(TTS):
     def get_tts(self, sentence: str, wav_file: str,
                 lang: str = None, voice: str = None) -> tuple:
         """Synthesize ``sentence`` into ``wav_file`` and return (path, None)."""
-        voice = voice or self.config.get("voice", DEFAULT_VOICE)
+        # OVOS/Neon pass voice="default" when the user hasn't picked one
+        # explicitly. Kokoro has no voice called "default", so treat that
+        # sentinel (and empty/None) as "fall back to configured voice".
+        if not voice or voice == "default":
+            voice = self.config.get("voice", DEFAULT_VOICE)
         speed = float(self.config.get("speed", 1.0))
 
         # Voice id wins over OVOS lang — picking bm_george shouldn't render

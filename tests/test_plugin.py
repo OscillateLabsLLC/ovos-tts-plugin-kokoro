@@ -32,7 +32,9 @@ def test_import_fast():
 def test_available_languages():
     from ovos_tts_plugin_kokoro import KokoroTTSPlugin
 
-    langs = KokoroTTSPlugin.available_languages()
+    # available_languages is a classproperty (matching the OVOS TTS base
+    # class), so it is accessed as an attribute, not called.
+    langs = KokoroTTSPlugin.available_languages
     assert {"en", "es", "fr", "ja", "zh"}.issubset(langs)
 
 

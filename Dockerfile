@@ -7,10 +7,12 @@ RUN apt-get update && \
 # Install torch CPU-only first to avoid pulling CUDA wheels (~2GB savings)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Install ovos-tts-server and the plugin
+# Install ovos-tts-server and the plugin.
+# ovos-tts-server is pinned: the 1.x line serves /status via plain FastAPI
+# (no gradio), and unpinned installs previously drifted onto releases whose
+# /status route surfaced plugin/base-class contract mismatches.
 COPY . /tmp/plugin
-# Pin gradio-client to match gradio 3.x (ovos-tts-server pulls gradio 3.36)
-RUN pip install --no-cache-dir "gradio-client<1.0" "ovos-tts-server>=0.1.0" /tmp/plugin && \
+RUN pip install --no-cache-dir "ovos-tts-server==1.13.4" /tmp/plugin && \
     rm -rf /tmp/plugin
 
 # Misaki's G2P stack needs en_core_web_sm. Misaki tries to download it on

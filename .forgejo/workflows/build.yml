@@ -1,0 +1,29 @@
+name: build-and-push
+# kokoro-tts-server — extends python:3.12-slim, torch CPU-only, and PRE-DOWNLOADS
+# Kokoro weights in a build RUN (model warmup). Memory-heavy build — watch for
+# OOM on the dind runner; if it fails, bump the runner memory limit.
+# Registry unauthenticated.
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-push:
+    runs-on: docker
+    container:
+      image: catthehacker/ubuntu:act-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Compute image tag
+        id: tags
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "date_sha=${DATE}-${SHA}" >> "$GITHUB_OUTPUT"
+      - name: Build and push
+        run: |
+          IMAGE=docker.graywind.org/kokoro-tts-server
+          docker buildx build --push \
+            --tag "${IMAGE}:${{ steps.tags.outputs.date_sha }}" \
+            --tag "${IMAGE}:latest" .

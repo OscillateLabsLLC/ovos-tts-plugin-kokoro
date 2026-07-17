@@ -5,6 +5,7 @@ from typing import Dict, Optional, Tuple
 
 import numpy as np
 from ovos_plugin_manager.templates.tts import TTS
+from ovos_utils import classproperty
 from ovos_utils.lang import standardize_lang_tag
 from ovos_utils.log import LOG
 
@@ -285,7 +286,7 @@ class KokoroTTSPlugin(TTS):
             LOG.info("Shutting down Kokoro TTS — releasing %d pipeline(s)", len(_pipelines))
             _pipelines.clear()
 
-    @classmethod
+    @classproperty
     def available_languages(cls) -> set:
         """Return the BCP-47 base language codes Kokoro can serve."""
         return set(_KOKORO_TO_BCP47.values())

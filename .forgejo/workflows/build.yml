@@ -24,6 +24,15 @@ jobs:
       - name: Build and push
         run: |
           IMAGE=docker.graywind.org/kokoro-tts-server
+          # docker-container driver is required for local cache export
+          # (the default `docker` driver only supports inline cache). The
+          # builder container mounts /cache from the dind host (an NFS PVC —
+          # see forgejo-runner dind-cache-pvc.yml), so the exported cache
+          # survives runner restarts/reschedules and rebuilds stay warm.
+          docker buildx create --name cache-builder --driver docker-container \
+            --driver-opt network=host --use 2>/dev/null || docker buildx use cache-builder
           docker buildx build --push \
+            --cache-from type=local,src=/cache \
+            --cache-to   type=local,dest=/cache,mode=max \
             --tag "${IMAGE}:${{ steps.tags.outputs.date_sha }}" \
             --tag "${IMAGE}:latest" .

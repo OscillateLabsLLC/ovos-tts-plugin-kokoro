@@ -24,6 +24,14 @@ jobs:
       - name: Build and push
         run: |
           IMAGE=docker.graywind.org/kokoro-tts-server
-          docker buildx build --push \
+          # Classic build+push (not buildx): this Dockerfile is linear,
+          # single-arch, no cache/secret/multi-platform buildx features — so
+          # classic is equivalent AND its push honors the dind daemon's
+          # --max-concurrent-uploads=1, which buildx's own pusher may ignore.
+          # Serializing uploads is what fixes the large-layer push failure
+          # (parallel ~200MB layers dropped mid-stream → blob upload invalid).
+          docker build \
             --tag "${IMAGE}:${{ steps.tags.outputs.date_sha }}" \
             --tag "${IMAGE}:latest" .
+          docker push "${IMAGE}:${{ steps.tags.outputs.date_sha }}"
+          docker push "${IMAGE}:latest"

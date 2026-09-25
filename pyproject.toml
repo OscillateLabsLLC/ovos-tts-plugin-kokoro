@@ -44,6 +44,12 @@ ovos-tts-plugin-kokoro = "ovos_tts_plugin_kokoro:KokoroTTSPlugin"
 [project.entry-points."mycroft.plugin.tts.config"]
 "ovos-tts-plugin-kokoro.config" = "ovos_tts_plugin_kokoro:KokoroTTSPluginConfig"
 
+[project.entry-points."opm.tts"]
+ovos-tts-plugin-kokoro = "ovos_tts_plugin_kokoro:KokoroTTSPlugin"
+
+[project.entry-points."opm.tts.config"]
+"ovos-tts-plugin-kokoro.config" = "ovos_tts_plugin_kokoro:KokoroTTSPluginConfig"
+
 [tool.hatch.version]
 path = "ovos_tts_plugin_kokoro/version.py"
 

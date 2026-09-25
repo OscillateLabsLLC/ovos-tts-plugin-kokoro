@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.2.1...ovos-tts-plugin-kokoro-v0.3.0) (2026-09-25)
+
+
+### Features
+
+* register opm.tts entry points alongside mycroft.plugin.tts ([35a39c1](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/commit/35a39c1a840fd7aec56f0c40625dd462a8d182df))
+
 ## [0.2.1](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.2.0...ovos-tts-plugin-kokoro-v0.2.1) (2026-07-17)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.3.0...ovos-tts-plugin-kokoro-v0.4.0) (2026-10-10)
+
+
+### Features
+
+* return timed phonemes from Kokoro's duration model for lip sync ([62ccd5e](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/commit/62ccd5ea85dc53290e53e445c3f8eed57f1b7f01))
+
 ## [0.3.0](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.2.1...ovos-tts-plugin-kokoro-v0.3.0) (2026-09-25)
 
 

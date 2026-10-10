@@ -1,5 +1,7 @@
 """Basic POC tests for ovos-tts-plugin-kokoro."""
 
+from dataclasses import dataclass, field
+from typing import Optional
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -57,12 +59,23 @@ def test_resolve_lang_routes_british_english():
     assert tts_mod._resolve_lang("ko-KR", m) == "a"
 
 
-def _fake_pipeline(audio_chunks):
-    """Mock KPipeline that yields (graphemes, phonemes, audio) tuples."""
+@dataclass
+class _FakeResult:
+    """Stand-in for ``KPipeline.Result``: audio plus phoneme timing."""
+    audio: np.ndarray
+    phonemes: str = "həlˈO"
+    pred_dur: Optional[list] = field(default_factory=lambda: [18, 2, 2, 2, 2, 2, 1])
+
+
+def _fake_pipeline(audio_chunks, phonemes="həlˈO", pred_dur=None):
+    """Mock KPipeline that yields Result-like objects."""
     pipeline = MagicMock()
     def call(text, voice=None, speed=1.0):
         for chunk in audio_chunks:
-            yield ("g", "p", chunk)
+            result = _FakeResult(audio=chunk, phonemes=phonemes)
+            if pred_dur is not None:
+                result.pred_dur = pred_dur
+            yield result
     pipeline.side_effect = call
     return pipeline
 
@@ -83,7 +96,7 @@ def test_get_tts_writes_valid_wav(mock_get_pipeline, tmp_path):
     result, phonemes = plug.get_tts("Hello world", wav_file)
 
     assert result == wav_file
-    assert phonemes is None
+    assert phonemes == "pau:0.450 hh:0.500 ah:0.550 l:0.650 ow:0.700 pau:0.725"
     with wave.open(wav_file, "rb") as wf:
         assert wf.getsampwidth() == 2
         assert wf.getnchannels() == 1
@@ -121,3 +134,39 @@ def test_get_tts_default_voice_sentinel(mock_get_pipeline, tmp_path):
 
     _args, kwargs = pipeline.call_args
     assert kwargs.get("voice") == "af_bella"
+
+
+@patch("ovos_tts_plugin_kokoro.tts._get_pipeline")
+def test_get_tts_without_timing_returns_no_phonemes(mock_get_pipeline, tmp_path):
+    """No pred_dur (e.g. model-less pipeline) must leave visemes to G2P."""
+    fake_audio = np.zeros(24000, dtype=np.float32)
+    pipeline = _fake_pipeline([fake_audio])
+    pipeline.side_effect = lambda text, voice=None, speed=1.0: iter(
+        [_FakeResult(audio=fake_audio, pred_dur=None)]
+    )
+    mock_get_pipeline.return_value = pipeline
+
+    from ovos_tts_plugin_kokoro import KokoroTTSPlugin
+
+    plug = KokoroTTSPlugin(config={"lang": "en-US", "voice": "af_bella", "sample_rate": 24000})
+    _wav, phonemes = plug.get_tts("Hi", str(tmp_path / "notiming.wav"))
+
+    assert phonemes is None
+
+
+@patch("ovos_tts_plugin_kokoro.tts._get_pipeline")
+def test_get_tts_phonemes_feed_template_visemes(mock_get_pipeline, tmp_path):
+    """The returned string must round-trip through TTS.viseme() into
+    (viseme_code, cumulative_end) pairs the enclosure understands."""
+    fake_audio = np.zeros(24000, dtype=np.float32)
+    mock_get_pipeline.return_value = _fake_pipeline([fake_audio])
+
+    from ovos_tts_plugin_kokoro import KokoroTTSPlugin
+
+    plug = KokoroTTSPlugin(config={"lang": "en-US", "voice": "af_bella", "sample_rate": 24000})
+    _wav, phonemes = plug.get_tts("Hello", str(tmp_path / "visemes.wav"))
+
+    pairs = plug.viseme(phonemes)
+    assert pairs == [("4", 0.45), ("0", 0.5), ("0", 0.55), ("3", 0.65), ("2", 0.7), ("4", 0.725)]
+    ends = [end for _code, end in pairs]
+    assert ends == sorted(ends)

@@ -9,6 +9,8 @@ from ovos_utils import classproperty
 from ovos_utils.lang import standardize_lang_tag
 from ovos_utils.log import LOG
 
+from .visemes import phoneme_timing
+
 
 # BCP-47 base subtag -> kokoro language code.
 # Full BCP-47 tags can override via `language_aliases` config.
@@ -245,7 +247,13 @@ class KokoroTTSPlugin(TTS):
 
     def get_tts(self, sentence: str, wav_file: str,
                 lang: str = None, voice: str = None) -> tuple:
-        """Synthesize ``sentence`` into ``wav_file`` and return (path, None)."""
+        """Synthesize ``sentence`` into ``wav_file``.
+
+        Returns ``(wav_file, phonemes)`` where ``phonemes`` is the OVOS
+        ``phoneme:end_time`` timing string built from Kokoro's own duration
+        predictions, so enclosures get accurately timed visemes without a
+        G2P plugin. ``phonemes`` is ``None`` if timing was unavailable.
+        """
         # OVOS/Neon pass voice="default" when the user hasn't picked one
         # explicitly. Kokoro has no voice called "default", so treat that
         # sentinel (and empty/None) as "fall back to configured voice".
@@ -258,9 +266,10 @@ class KokoroTTSPlugin(TTS):
         kokoro_lang = self._voice_lang(voice) or _resolve_lang(lang or self.lang, self.lang_map)
         pipeline = _get_pipeline(kokoro_lang, device=self.device)
 
-        chunks = []
-        for _graphemes, _phonemes, audio in pipeline(sentence, voice=voice, speed=speed):
-            chunks.append(_audio_chunk_to_numpy(audio))
+        chunks, timing = [], []
+        for result in pipeline(sentence, voice=voice, speed=speed):
+            chunks.append(_audio_chunk_to_numpy(result.audio))
+            timing.append((result.phonemes, result.pred_dur))
 
         if not chunks:
             LOG.warning("Kokoro returned no audio for sentence: %r", sentence)
@@ -278,7 +287,10 @@ class KokoroTTSPlugin(TTS):
             wf.setframerate(target_rate)
             wf.writeframes(audio_int16.tobytes())
 
-        return wav_file, None
+        phonemes = phoneme_timing(timing)
+        if phonemes is None:
+            LOG.debug("Kokoro returned no usable phoneme timing for %r; visemes left to G2P", sentence)
+        return wav_file, phonemes
 
     def shutdown(self):
         """Release cached pipelines to free memory."""

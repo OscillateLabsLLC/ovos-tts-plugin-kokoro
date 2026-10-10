@@ -128,6 +128,16 @@ Lookup tries the full BCP-47 tag first (e.g. `en-gb`), then falls back to the ba
 
 > **Apple Silicon note:** Despite MPS being available on M-series Macs, **CPU is the fastest device for Kokoro on Apple Silicon**. The vocoder leans heavily on `torch.stft`/`istft`, which are weak spots on the Metal backend — measured RTF on an M3 Max was ~0.08 on CPU vs ~0.40 on MPS. The default of `"cpu"` is intentional; only set `device` to `"cuda"` if you actually have a discrete NVIDIA GPU.
 
+## Lip sync (visemes)
+
+The plugin returns phoneme timing alongside the audio, so enclosures with a mouth (the Mark 1 and the virtual Mark 1) animate in sync with the voice **without a G2P plugin**.
+
+Kokoro's model predicts a duration for every phoneme it speaks. The plugin converts those predictions into the OVOS `phoneme:end_time` format (lowercase ARPAbet keys, cumulative seconds), including the leading silence the model adds before speech. `ovos-audio` turns that into `enclosure.mouth.viseme_list` messages.
+
+This is more accurate than the G2P fallback path, which guesses a constant duration per phoneme. If timing is ever unavailable the plugin returns no phonemes and OVOS falls back to the configured G2P plugin, if any.
+
+Non-English voices work too: every sound in Kokoro's phoneme alphabet maps to the nearest English mouth shape.
+
 ## License
 
 Apache-2.0

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.4.0...ovos-tts-plugin-kokoro-v0.4.1) (2026-11-08)
+
+
+### Documentation
+
+* promote support status from proof of concept to active ([3fd40fd](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/commit/3fd40fd065957f233a8d88270fd85f066d0934bd))
+
 ## [0.4.0](https://github.com/OscillateLabsLLC/ovos-tts-plugin-kokoro/compare/ovos-tts-plugin-kokoro-v0.3.0...ovos-tts-plugin-kokoro-v0.4.0) (2026-10-10)
 
 

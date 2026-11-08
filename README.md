@@ -1,8 +1,6 @@
 # ovos-tts-plugin-kokoro
 
-[![Status: Proof of Concept](https://img.shields.io/badge/status-proof%20of%20concept-orange)](https://github.com/OscillateLabsLLC/.github/blob/main/SUPPORT_STATUS.md)
-
-> **POC status — experimental, not for production, may be abandoned.** No API stability promise.
+[![Status: Active](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/OscillateLabsLLC/.github/blob/main/SUPPORT_STATUS.md)
 
 OVOS TTS plugin for [Kokoro](https://github.com/hexgrad/kokoro) — an 82M parameter multilingual TTS model by hexgrad. Same engine used by [VoiceMode](https://github.com/mbailey/voicemode), now wired up for the standard OVOS voice assistant.
 
